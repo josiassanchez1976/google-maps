@@ -107,16 +107,18 @@ def get_real_categories():
         url = f'https://www.google.com/maps/place/?q=place_id:{place_id}'
         try:
             driver.get(url)
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'body'))
-            )
-            time.sleep(2)
-            elems = driver.find_elements(By.CSS_SELECTOR, '.fontBodyMedium')
-            if elems:
-                item['categoria_real'] = elems[0].text.strip()
-        except TimeoutException:
-            item['categoria_real'] = ''
-        except Exception:
+            try:
+                elem = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, 'button[jsaction="pane.wfvdle63.category"]')
+                    )
+                )
+                item['categoria_real'] = elem.text.strip()
+            except TimeoutException:
+                print(f"[ERROR] Timeout retrieving category for {place_id}")
+                item['categoria_real'] = ''
+        except Exception as e:
+            print(f"[ERROR] {place_id}: {e}")
             item['categoria_real'] = ''
         time.sleep(1)
 
