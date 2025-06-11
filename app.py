@@ -118,9 +118,11 @@ def get_real_categories():
     results = data.get('results', [])
 
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
     options.add_argument('--disable-gpu')
+    options.add_argument('--disable-software-rasterizer')
+    options.add_argument('--disable-3d-apis')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--no-sandbox')
 
     driver = webdriver.Chrome(options=options)
 
@@ -129,20 +131,24 @@ def get_real_categories():
         if not place_id:
             continue
         url = f'https://www.google.com/maps/place/?q=place_id:{place_id}'
-        try:
-            driver.get(url)
+        success = False
+        for attempt in range(3):
             try:
-                elem = WebDriverWait(driver, 10).until(
+                driver.get(url)
+                elem = WebDriverWait(driver, 15).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, 'button[jsaction="pane.wfvdle63.category"]')
                     )
                 )
                 item['categoria_real'] = elem.text.strip()
+                success = True
+                break
             except TimeoutException:
-                print(f"[ERROR] Timeout retrieving category for {place_id}")
-                item['categoria_real'] = ''
-        except Exception as e:
-            print(f"[ERROR] {place_id}: {e}")
+                print(f"[ERROR] Timeout retrieving category for {place_id} (attempt {attempt+1})")
+            except Exception as e:
+                print(f"[ERROR] {place_id}: {e}")
+                break
+        if not success:
             item['categoria_real'] = ''
         time.sleep(1)
 

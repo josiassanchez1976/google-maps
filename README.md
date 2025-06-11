@@ -25,8 +25,10 @@ The Google API key is stored in `config.py` as `GOOGLE_API_KEY`. Update it with 
 ## Real Category Extraction
 
 After performing a search, use the **Obtener categorías reales** button to fetch
-the category displayed on Google Maps for each result. This step runs Selenium
-in headless Chrome, so ensure Chrome/ChromeDriver are installed.
+the category displayed on Google Maps for each result. Selenium opens Chrome
+visibly with GPU and 3D APIs disabled to avoid WebGL errors. The extractor
+retries each place up to three times and requires Chrome/ChromeDriver to be
+installed.
 
 ## Manual visual review
 
