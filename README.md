@@ -21,3 +21,9 @@ The server will be available at `http://localhost:5000/`.
 ## Configuration
 
 The Google API key is stored in `config.py` as `GOOGLE_API_KEY`. Update it with your own key if needed.
+
+## Real Category Extraction
+
+After performing a search, use the **Obtener categorías reales** button to fetch
+the category displayed on Google Maps for each result. This step runs Selenium
+in headless Chrome, so ensure Chrome/ChromeDriver are installed.

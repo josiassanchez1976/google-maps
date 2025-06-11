@@ -41,7 +41,7 @@ function populateTable(data) {
     tbody.innerHTML = '';
     for (const item of data) {
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${item.name}</td><td>${item.address}</td><td>${item.category}</td><td>${item.city}</td><td>${item.state}</td>`;
+        row.innerHTML = `<td>${item.name}</td><td>${item.address}</td><td>${item.category}</td><td>${item.categoria_real || ''}</td><td>${item.city}</td><td>${item.state}</td>`;
         tbody.appendChild(row);
     }
 }
@@ -66,5 +66,24 @@ $(function() {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+    });
+
+    $('#realCategoryBtn').on('click', function() {
+        if (resultsData.length === 0) return;
+        $('#realCategoryBtn').prop('disabled', true);
+        $.ajax({
+            url: '/get_real_categories',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({results: resultsData}),
+            success: function(data) {
+                resultsData = data;
+                populateTable(data);
+                $('#realCategoryBtn').prop('disabled', false);
+            },
+            error: function() {
+                $('#realCategoryBtn').prop('disabled', false);
+            }
+        });
     });
 });
