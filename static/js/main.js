@@ -41,7 +41,20 @@ function populateTable(data) {
     tbody.innerHTML = '';
     for (const item of data) {
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${item.name}</td><td>${item.address}</td><td>${item.category}</td><td>${item.categoria_real || ''}</td><td>${item.city}</td><td>${item.state}</td>`;
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.phone || ''}</td>
+            <td>${item.address}</td>
+            <td>${item.place_id}</td>
+            <td>
+                <a class="btn btn-sm btn-primary me-1" href="https://www.google.com/maps/search/?api=1&query=place_id=${item.place_id}" target="_blank">Ver en Google Maps</a>
+                <button class="btn btn-sm btn-danger me-1 delete-btn">Eliminar</button>
+                <button class="btn btn-sm btn-secondary copy-btn">Copiar</button>
+            </td>`;
+        row.querySelector('.delete-btn').addEventListener('click', () => row.remove());
+        row.querySelector('.copy-btn').addEventListener('click', () => {
+            navigator.clipboard.writeText(`${item.name}\n${item.address}\n${item.phone || ''}`);
+        });
         tbody.appendChild(row);
     }
 }
@@ -68,22 +81,4 @@ $(function() {
         document.body.removeChild(a);
     });
 
-    $('#realCategoryBtn').on('click', function() {
-        if (resultsData.length === 0) return;
-        $('#realCategoryBtn').prop('disabled', true);
-        $.ajax({
-            url: '/get_real_categories',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({results: resultsData}),
-            success: function(data) {
-                resultsData = data;
-                populateTable(data);
-                $('#realCategoryBtn').prop('disabled', false);
-            },
-            error: function() {
-                $('#realCategoryBtn').prop('disabled', false);
-            }
-        });
-    });
 });

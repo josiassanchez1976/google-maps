@@ -1,6 +1,6 @@
 # Google Maps Search App
 
-This project provides a simple Flask application that searches Google Places in multiple cities for multiple keywords and displays the results on an interactive Google Map. Searches now rely on the Geocoding API together with Places **Nearby Search** and pagination to gather up to 60 businesses per city and keyword.
+This project provides a simple Flask application that searches Google Places in multiple cities for multiple keywords and displays the results on an interactive Google Map. Searches rely on the Geocoding API together with Places **Nearby Search** and pagination to gather up to 60 businesses per city and keyword.
 
 ## Setup
 
@@ -22,22 +22,11 @@ The server will be available at `http://localhost:5000/`.
 
 The Google API key is stored in `config.py` as `GOOGLE_API_KEY`. Update it with your own key if needed.
 
-## Real Category Extraction
 
-After performing a search, use the **Obtener categorías reales** button to fetch
-the category displayed on Google Maps for each result. Selenium opens Chrome
-visibly with GPU and 3D APIs disabled to avoid WebGL errors. The extractor
-retries each place up to three times and requires Chrome/ChromeDriver to be
-installed.
+## Result actions
 
-## Manual visual review
+Each search result includes the business phone number, address and place ID. In the results table you can:
+- **Ver en Google Maps**: open the location in a new tab.
+- **Eliminar**: remove the row from the list without reloading.
+- **Copiar**: copy the name, address and phone number to the clipboard.
 
-Export your search results as JSON and then run:
-
-```bash
-python manual_review.py results.json
-```
-
-This script opens Chrome (visible) one location at a time using Selenium so you
-can decide whether to **agregar** (a) or **descartar** (d) each result. Accepted
-places are saved to `resultados_filtrados.json`.

@@ -2,11 +2,6 @@ import time
 from flask import Flask, render_template, request, jsonify
 import requests
 from config import GOOGLE_API_KEY
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 
 app = Flask(__name__)
 
@@ -49,7 +44,7 @@ def call_place_details(place_id):
     url = 'https://maps.googleapis.com/maps/api/place/details/json'
     params = {
         'place_id': place_id,
-        'fields': 'name,formatted_address,geometry/location,types',
+        'fields': 'name,formatted_address,formatted_phone_number,geometry/location,types',
         'key': GOOGLE_API_KEY
     }
     resp = requests.get(url, params=params)
@@ -91,16 +86,17 @@ def search():
                     category = types[0] if types else ''
                     location = info.get('geometry', {}).get('location', {})
                     address = info.get('formatted_address', place.get('vicinity', ''))
+                    phone = info.get('formatted_phone_number', '')
                     results.append({
                         'name': name,
+                        'phone': phone,
                         'address': address,
                         'category': category,
                         'city': city,
                         'state': state,
                         'lat': location.get('lat'),
                         'lng': location.get('lng'),
-                        'place_id': place_id,
-                        'categoria_real': ''
+                        'place_id': place_id
                     })
                 pagetoken = data.get('next_page_token')
                 if pagetoken and pages < 2:
@@ -110,51 +106,5 @@ def search():
                 break
             time.sleep(1)
     return jsonify(results)
-
-
-@app.route('/get_real_categories', methods=['POST'])
-def get_real_categories():
-    data = request.get_json(force=True)
-    results = data.get('results', [])
-
-    options = webdriver.ChromeOptions()
-    options.add_argument('--disable-gpu')
-    options.add_argument('--disable-software-rasterizer')
-    options.add_argument('--disable-3d-apis')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--no-sandbox')
-
-    driver = webdriver.Chrome(options=options)
-
-    for item in results:
-        place_id = item.get('place_id')
-        if not place_id:
-            continue
-        url = f'https://www.google.com/maps/place/?q=place_id:{place_id}'
-        success = False
-        for attempt in range(3):
-            try:
-                driver.get(url)
-                elem = WebDriverWait(driver, 15).until(
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, 'button[jsaction="pane.wfvdle63.category"]')
-                    )
-                )
-                item['categoria_real'] = elem.text.strip()
-                success = True
-                break
-            except TimeoutException:
-                print(f"[ERROR] Timeout retrieving category for {place_id} (attempt {attempt+1})")
-            except Exception as e:
-                print(f"[ERROR] {place_id}: {e}")
-                break
-        if not success:
-            item['categoria_real'] = ''
-        time.sleep(1)
-
-    driver.quit()
-    return jsonify(results)
-
-
 if __name__ == '__main__':
     app.run(debug=True)
